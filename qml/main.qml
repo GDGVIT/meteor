@@ -3,6 +3,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 import QtQuick.Shapes 1.12
+import QtGraphicalEffects 1.0
 
 import "Global"
 
@@ -17,14 +18,22 @@ ApplicationWindow {
 
     title: "meteor"
     flags: Qt.Window | Qt.FramelessWindowHint
+
     color: Resources.transparentColor
+
+    property var isFullScreen: false
+    property var prevHeight: 480
+    property var prevWidth: 640
+    property var prevWindowX: 0
+    property var prevWindowY: 0
 
     Rectangle {
         id: windowLayer
-        height: parent.height
-        width: parent.width
+        height: parent.height - Resources.windowDropShadowVerticalPadding
+        width: parent.width - Resources.windowDropShadowHorizontalPadding
         radius: Resources.windowCornerRadius
         color: Resources.windowBackgroundColor
+
 
         Rectangle {
             id: windowTitleBar
@@ -88,10 +97,6 @@ ApplicationWindow {
                     height: 2 * parent.radius
                     width: 2 * parent.radius
                 }
-
-                onClicked: {
-                    backendWindow.onClose()
-                }
             }
 
             RoundButton {
@@ -106,6 +111,26 @@ ApplicationWindow {
                     color: Resources.windowTitleBarRestoreButtonBackgroundColor
                     height: 2 * parent.radius
                     width: 2 * parent.radius
+                }
+
+                onClicked: {
+                    if(isFullScreen) {
+                        isFullScreen = false
+                        window.height = prevHeight
+                        window.width = prevWidth
+                        window.x = prevWindowX
+                        window.y = prevWindowY
+                    } else {
+                        prevHeight = window.height
+                        prevWidth = window.width
+                        isFullScreen = true
+                        window.height = Screen.height
+                        window.width = Screen.width
+                        prevWindowX = window.x
+                        prevWindowY = window.y
+                        window.x = 0
+                        window.y = 0
+                    }
                 }
             }
 
@@ -122,33 +147,140 @@ ApplicationWindow {
                     height: 2 * parent.radius
                     width: 2 * parent.radius
                 }
+
+                onClicked: {
+                    window.visibility = Window.Minimized
+                }
             }
 
         }
 
-        ListView {
-            id: listView
-            x: 135
-            y: 146
-            width: 328
-            height: 253
-            delegate: Resources.chatBubble
-            model: ListModel {
-                ListElement {
-                    name: "data"
-                    isRightBubble: true
-                    bubbleData: "Hello meteor!\nHow are you\nI am fine."
+        Rectangle {
+            id: chatContainer
+            x: parent.width / 3
+            y: windowTitleBar.height + Resources.windowTitleBarBottomOffset
+            width: 2 * parent.width / 3
+            anchors.bottom: chatMessageContainer.top
+            anchors.top: windowTitleBar.bottom
+
+            color: Resources.chatBackgroundColor
+
+            ListView {
+                id: chatListView
+                x: Resources.chatBubbleOutgrowthOffset
+                y: Resources.chatBubbleVerticalPadding
+                width: parent.width - Resources.chatListViewScrollBarHorizontalOffset
+                height: parent.height - 2 * Resources.chatBubbleVerticalPadding
+                antialiasing: true
+                delegate: Resources.chatBubble
+
+                ScrollBar.vertical: ScrollBar {
+                    visible: false
                 }
-                ListElement {
-                    name: "data"
-                    isRightBubble: false
-                    bubbleData: "Hi there! \nHow are you\nI am fine."
+
+                clip: true
+
+
+
+                model: ListModel {
+                    ListElement {
+                        name: "data"
+                        isRightBubble: true
+                        bubbleData: "Hello meteor!"
+                        applyBubbleSpace: false
+                        renderBubbleOutgrowth: true
+                    }
+                    ListElement {
+                        name: "data"
+                        isRightBubble: true
+                        bubbleData: "I am Vishaal."
+                        applyBubbleSpace: true
+                        renderBubbleOutgrowth: false
+                    }
+                    ListElement {
+                        name: "data"
+                        isRightBubble: false
+                        bubbleData: "I am meteor. I live in kademlia."
+                        applyBubbleSpace: true
+                        renderBubbleOutgrowth: true
+                    }
+                    ListElement {
+                        name: "data"
+                        isRightBubble: false
+                        bubbleData: "I am meteor. I live in kademlia."
+                        applyBubbleSpace: true
+                        renderBubbleOutgrowth: true
+                    }
+                    ListElement {
+                        name: "data"
+                        isRightBubble: false
+                        bubbleData: "I am meteor. I live in kademlia."
+                        applyBubbleSpace: true
+                        renderBubbleOutgrowth: true
+                    }
+                    ListElement {
+                        name: "data"
+                        isRightBubble: false
+                        bubbleData: "I am meteor. I live in kademlia."
+                        applyBubbleSpace: true
+                        renderBubbleOutgrowth: true
+                    }
+                    ListElement {
+                        name: "data"
+                        isRightBubble: false
+                        bubbleData: "I am meteor. I live in kademlia."
+                        applyBubbleSpace: true
+                        renderBubbleOutgrowth: true
+                    }
                 }
             }
         }
 
+        Rectangle {
+            id: chatMessageContainer
+            anchors.bottom: parent.bottom
+            anchors.right: chatContainer.right
+            height: Resources.chatMessageContainerHeight
+            radius: parent.radius
+            width: chatContainer.width
+            color: Resources.chatMessageContainerBackgroundColor
 
 
+
+            //conceal top corner radius
+            Rectangle {
+                width: parent.width
+                height: parent.radius
+                color: parent.color
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
+
+            //conceal left corner radius
+            Rectangle {
+                width: parent.radius
+                height: parent.height
+                color: parent.color
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+            }
+
+        }
+
+    }
+
+    DropShadow {
+        id: windowLayerDropShadow
+        anchors.fill: windowLayer
+        cached: true
+        verticalOffset: 1
+        horizontalOffset: 1
+        radius: 8
+        samples: 16
+        color: "#80000000"
+        source: windowLayer
     }
 
     MouseArea {
@@ -202,4 +334,5 @@ ApplicationWindow {
             }
         }
     }
+
 }
