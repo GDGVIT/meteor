@@ -26,9 +26,6 @@ ApplicationWindow {
     property var prevWidth: 640
     property var prevWindowX: 0
     property var prevWindowY: 0
-    property var targetUrl
-    property var targetName
-    property var targetStatus
 
 
     Rectangle {
@@ -100,6 +97,10 @@ ApplicationWindow {
                     color: Resources.windowTitleBarCloseButtonBackgroundColor
                     height: 2 * parent.radius
                     width: 2 * parent.radius
+                }
+                onClicked: {
+                    console.log("You are closing this window.");
+                    backendWindow.onClose();
                 }
             }
 
@@ -176,7 +177,7 @@ ApplicationWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 color: Resources.chatHeaderForegroundColor
                 font.pointSize: Resources.chatHeaderFontPointSize
-                text: contactListView.model.get(contactListView.currentIndex).name
+                text: contactModelProvider.model.getName(contactListView.currentIndex)
                 rightPadding: 10
             }
 
@@ -202,7 +203,7 @@ ApplicationWindow {
                         context.beginPath();
                         context.moveTo(cx + radius, cy);
                         context.arc(cx,cy,radius,0,2 * Math.PI);
-                        context.fillStyle = contactListView.model.get(contactListView.currentIndex).status === 0 ? Resources.onlineMarkerColor : Resources.offlineMarkerColor;
+                        context.fillStyle = contactModelProvider.model.getStatus(contactListView.currentIndex) === 0 ? Resources.onlineMarkerColor : Resources.offlineMarkerColor;
                         context.fill();
 
                     }
@@ -218,7 +219,7 @@ ApplicationWindow {
                 anchors.left: statusLayer.right
                 color: Resources.chatHeaderForegroundColor
                 font.pointSize: Resources.chatHeaderFontPointSize
-                text: contactListView.model.get(contactListView.currentIndex).status === 0 ? "online" : "offline"
+                text: contactModelProvider.model.getStatus(contactListView.currentIndex) === 0 ? "online" : "offline"
                 leftPadding: 10
             }
         }
@@ -251,58 +252,7 @@ ApplicationWindow {
                 boundsBehavior: Flickable.StopAtBounds
                 interactive: true
 
-                model: ListModel {
-                    ListElement {
-                        name: "data"
-                        isRightBubble: true
-                        bubbleData: "Hello Vishaal!"
-                        applyBubbleSpace: false
-                        renderBubbleOutgrowth: true
-                    }
-                    ListElement {
-                        name: "data"
-                        isRightBubble: true
-                        bubbleData: "I am meteor."
-                        applyBubbleSpace: true
-                        renderBubbleOutgrowth: false
-                    }
-                    ListElement {
-                        name: "data"
-                        isRightBubble: false
-                        bubbleData: "Nice to meet you meteor."
-                        applyBubbleSpace: false
-                        renderBubbleOutgrowth: true
-                    }
-                    ListElement {
-                        name: "data"
-                        isRightBubble: false
-                        bubbleData: "Where do you live ?"
-                        applyBubbleSpace: true
-                        renderBubbleOutgrowth: false
-                    }
-                    ListElement {
-                        name: "data"
-                        isRightBubble: true
-                        bubbleData: "I live in kademlia."
-                        applyBubbleSpace: false
-                        renderBubbleOutgrowth: true
-                    }
-                    ListElement {
-                        name: "data"
-                        isRightBubble: true
-                        bubbleData: "The land of the DHT."
-                        applyBubbleSpace: false
-                        renderBubbleOutgrowth: false
-                    }
-
-                    ListElement {
-                        name: "data"
-                        isRightBubble: true
-                        bubbleData: "If you wanna see how I work, then check out my <br><a href=\"https://github.com/GDGVIT/meteor\">repository.</a>"
-                        applyBubbleSpace: true
-                        renderBubbleOutgrowth: false
-                    }
-                }
+                model: chatModelProvider.model
             }
         }
 
@@ -736,60 +686,7 @@ ApplicationWindow {
                 boundsBehavior: Flickable.StopAtBounds
                 clip: true
                 flickableDirection: Flickable.VerticalFlick
-                model: ListModel {
-                    ListElement {
-                        name: "Vishaal Selvaraj"
-                        imageUrl: "file:///F:/prof.jpg"
-                        recentText: "meteor rocks!"
-                        msgCount: 1
-                        status: 0
-                    }
-
-                    ListElement {
-                        name: "Amogh Lele"
-                        imageUrl: "file:///F:/pp.jpg"
-                        recentText: "meteor is cool!"
-                        msgCount: 135
-                        status: 0
-                    }
-
-                    ListElement {
-                        name: "Abhishek Kushwaha"
-                        imageUrl: "file:///F:/abhishek.jpg"
-                        recentText: "Nice to meet you!"
-                        msgCount: 0
-                        status: 1
-                    }
-
-                    ListElement {
-                        name: "Ayush Priya"
-                        imageUrl: "file:///F:/ayush.jpg"
-                        recentText: "Got 99 problems but a breach ain't one."
-                        msgCount: 2
-                        status: 1
-                    }
-
-                    ListElement {
-                        name: "Angad Sharma"
-                        imageUrl: "file:///F:/angad.jpg"
-                        recentText: "Webinar on async patterns in node ^."
-                        msgCount: 0
-                        status: 0
-                    }
-
-                    ListElement {
-                        name: "Samarth Nayyar"
-                        imageUrl: "file:///F:/samarth.jpg"
-                        recentText: "Hi there!"
-                        msgCount: 1
-                        status: 1
-                    }
-
-
-
-
-
-                }
+                model: contactModelProvider.model
 
                 delegate: Resources.contactDelegate
 
@@ -801,12 +698,35 @@ ApplicationWindow {
 
         Rectangle {
             id: extrasContainer
+            radius: Resources.windowCornerRadius
             height: Resources.chatMessageContainerHeight
             anchors.right: chatMessageContainer.left
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             color: Resources.extrasContainerBackgroundColor
+
+            //conceal top corner radius
+            Rectangle {
+                width: parent.width
+                height: parent.radius
+                color: parent.color
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
+
+            //conceal right corner radius
+            Rectangle {
+                width: parent.radius
+                height: parent.height
+                color: parent.color
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+            }
         }
+
+
 
     }
 
