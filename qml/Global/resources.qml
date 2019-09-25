@@ -98,7 +98,7 @@ QtObject {
         Row {
             id: chatBubbleRow
 
-            anchors.right: isRightBubble ? parent.right : undefined
+            anchors.right: isRightBubble === 1 ? parent.right : undefined
 
             Rectangle {
                 id: chatBubbleContainer
@@ -108,21 +108,21 @@ QtObject {
                 Rectangle {
                     id: rect
                     anchors.top: parent.top
-                    anchors.left: isRightBubble ? parent.left : undefined
-                    anchors.right: isRightBubble ? undefined : parent.right
+                    anchors.left: isRightBubble === 1 ? parent.left : undefined
+                    anchors.right: isRightBubble === 1 ? undefined : parent.right
 
 
                     height: chatBubbleData.height + chatBubblePadding
                     width: chatBubbleData.width + chatBubblePadding
                     radius: chatBubbleRadius
-                    color: isRightBubble ? rightChatBubbleBackgroundColor : leftChatBubbleBackgroundColor
+                    color: isRightBubble === 1 ? rightChatBubbleBackgroundColor : leftChatBubbleBackgroundColor
 
                     Text {
                         id: chatBubbleData
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: bubbleData
-                        color: isRightBubble ? rightChatBubbleForegroundColor : leftChatBubbleForegroundColor
+                        color: isRightBubble === 1 ? rightChatBubbleForegroundColor : leftChatBubbleForegroundColor
 
                         font.pointSize: chatBubbleFontPointSize
                         linkColor: isRightBubble ? "#ffe46b" : "#7eb8f8"
@@ -141,13 +141,13 @@ QtObject {
                         ShapePath {
 
                             strokeWidth: 1
-                            strokeColor: isRightBubble ? rightChatBubbleBackgroundColor : leftChatBubbleBackgroundColor
-                            fillColor: isRightBubble ? rightChatBubbleBackgroundColor : leftChatBubbleBackgroundColor
+                            strokeColor: isRightBubble === 1 ? rightChatBubbleBackgroundColor : leftChatBubbleBackgroundColor
+                            fillColor: isRightBubble === 1 ? rightChatBubbleBackgroundColor : leftChatBubbleBackgroundColor
 
                             strokeStyle: ShapePath.SolidLine
                             startX: 0; startY: 0
                             PathLine { x: 0; y: 5 }
-                            PathLine { x: isRightBubble ? chatBubbleOutgrowthOffset: -chatBubbleOutgrowthOffset; y: 0 }
+                            PathLine { x: isRightBubble === 1 ? chatBubbleOutgrowthOffset: -chatBubbleOutgrowthOffset; y: 0 }
                             PathLine { x: 0; y: 0 }
                         }
                     }
@@ -318,9 +318,9 @@ QtObject {
 
                     var rootElement = parent.parent.parent;
 
-                    if(rootElement.stat === 0) {
+                    if(rootElement.stat === 1) {
                         context.fillStyle = onlineMarkerColor;
-                    } else if(rootElement.stat === 1) {
+                    } else if(rootElement.stat === 0) {
                         context.fillStyle = offlineMarkerColor;
                     }
                     context.fill();

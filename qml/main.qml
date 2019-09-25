@@ -203,8 +203,10 @@ ApplicationWindow {
                         context.beginPath();
                         context.moveTo(cx + radius, cy);
                         context.arc(cx,cy,radius,0,2 * Math.PI);
-                        context.fillStyle = contactModelProvider.model.getStatus(contactListView.currentIndex) === 0 ? Resources.onlineMarkerColor : Resources.offlineMarkerColor;
-                        context.fill();
+                        context.fillStyle = contactModelProvider.model.getStatus(contactListView.currentIndex) === 1 ? Resources.onlineMarkerColor : Resources.offlineMarkerColor;
+                        if(contactListView.currentIndex != -1) {
+                            context.fill();
+                        }
 
                     }
 
@@ -219,7 +221,8 @@ ApplicationWindow {
                 anchors.left: statusLayer.right
                 color: Resources.chatHeaderForegroundColor
                 font.pointSize: Resources.chatHeaderFontPointSize
-                text: contactModelProvider.model.getStatus(contactListView.currentIndex) === 0 ? "online" : "offline"
+                text: contactModelProvider.model.getStatus(contactListView.currentIndex) === 1 ? "online" : "offline"
+                visible: contactListView.currentIndex !== -1
                 leftPadding: 10
             }
         }
@@ -253,6 +256,10 @@ ApplicationWindow {
                 interactive: true
 
                 model: chatModelProvider.model
+
+                onCountChanged: {
+                    currentIndex = count - 1;
+                }
             }
         }
 
@@ -265,9 +272,47 @@ ApplicationWindow {
             width: chatContainer.width
             color: Resources.chatMessageContainerBackgroundColor
 
+            RoundButton {
+                id: btnSend
+                height: 30
+                y: parent.height - height - 5
+                x: parent.width - width - 5
+                width: 50
+                radius: 10
+                background: Rectangle {
+                    id: btnSend_rect
+                    anchors.fill: parent
+                    radius: parent.radius
+                    color: "#5e5c8d"
+                    border.color: "white"
+                    border.width: 1
+
+                    Text {
+                        id: btnSendText
+                        text: "Send"
+                        anchors.centerIn: parent
+                        color: "white"
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onHoveredChanged: {
+                            parent.color = containsMouse ? "#3e3c6d" : "#5e5c8d";
+                        }
+
+                        onClicked: {
+                            mainBackend.sendMessage(contactModelProvider.model.getDHTId(contactListView.currentIndex), messageEdit.text)
+                            messageEdit.text = ""
+                        }
+                    }
+            }
+            }
+
             Flickable {
                 id: flick
-                width: parent.width
+                anchors.left: parent.left
+                anchors.right: btnSend.left
                 height: parent.height - parent.radius;
                 contentWidth: messageEdit.paintedWidth
                 contentHeight: messageEdit.paintedHeight
@@ -305,25 +350,31 @@ ApplicationWindow {
                         height: parent.height
                         color: Resources.transparentColor
                     }
-                    property var nlines: 0
                     onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+                    
+                    property var pressShift: 0
+
                     Keys.onPressed: {
-
-                        var delta = 10;
-                        if(event.key === Qt.Key_Return || event.key === Qt.Key_Enter){
-
-                            if(nlines < 3) {
-                                chatMessageContainer.height += delta;
-                                nlines++;
-                            }
+                        var nlines = messageEdit.text.split("\n").length - 1
+                        if(nlines <= 4) {
+                            chatMessageContainer.height = Resources.chatMessageContainerHeight + nlines * 10
+                        }
+                        if(event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+                            pressShift = 1;
+                        } else {
+                            pressShift = 0;
                         }
 
-                        if(event.key === Qt.Key_Backspace) {
-                            if(text[text.length - 1] === '\n' && nlines > 0) {
+                    }
 
-                                chatMessageContainer.height -= delta;
-                                nlines--;
+                    Keys.onReleased: {
+                        if(pressShift) {
+                            if(event.key === Qt.Key_Shift) {
+                                pressShift = 0;
+                                mainBackend.sendMessage(contactModelProvider.model.getDHTId(contactListView.currentIndex), messageEdit.text.substr(0, messageEdit.text.length - 1));
+                                messageEdit.text = "";
                             }
+
                         }
                     }
 
@@ -376,7 +427,7 @@ ApplicationWindow {
                 y: parent.border.width
                 height: parent.height - 2 * parent.border.width
                 font.pointSize: Resources.contactHeaderContainerFontPointSize
-                model: ["meteor-DSC", "meteor-global"]
+                model: ["meteor-global"]
 
                 indicator: Canvas {
                     id: contactHeaderComboBoxCanvas
@@ -606,6 +657,10 @@ ApplicationWindow {
                 onHoveredChanged:  {
                     searchButtonCanvas.requestPaint();
                 }
+
+                onClicked: {
+                    mainBackend.search(searchField.text)
+                }
             }
 
             TextField {
@@ -622,6 +677,10 @@ ApplicationWindow {
                     width: parent.width
                     height: parent.height
                     color: Resources.transparentColor
+                }
+
+                onTextChanged: {
+                    mainBackend.search(searchField.text)
                 }
 
             }
@@ -666,6 +725,10 @@ ApplicationWindow {
                 onHoveredChanged: {
                     addContactsButtonCanvas.requestPaint();
                 }
+
+                onClicked: {
+                    mainBackend.openAddContactsWindow()
+                }
             }
         }
 
@@ -691,6 +754,7 @@ ApplicationWindow {
                 delegate: Resources.contactDelegate
 
                 onCurrentIndexChanged: {
+                    mainBackend.loadChat(contactModelProvider.model.getDHTId(currentIndex))
                     statusCanvas.requestPaint();
                 }
             }

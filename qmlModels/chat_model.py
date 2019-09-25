@@ -37,6 +37,13 @@ class ChatModel(QtCore.QAbstractListModel):
         return {ChatModel.NameRole: b"name", ChatModel.DataRole: b"bubbleData", ChatModel.BubbleTypeRole: b"isRightBubble",
            ChatModel.SpaceRole: b"applyBubbleSpace", ChatModel.RenderOutgrowthRole: b"renderBubbleOutgrowth"}
 
+    def resetView(self, new_model=None):
+        self.beginResetModel()
+        if new_model != None:
+            self._model = new_model
+        self.endResetModel()
+
+
     def appendRow(self, chat_row):
         self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
         if self.rowCount() == 0:
@@ -53,7 +60,8 @@ class ChatModel(QtCore.QAbstractListModel):
 
         self._model.append(chat_row)
         self.endInsertRows()
-
+        self.resetView()
+    
 
 
 

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+service MessageSender {
+    rpc CreateProfile (CreateProfileRequest) returns (CreateProfileResponse) {}
+    rpc AddFriend (FriendRequest) returns (FriendResponse) {}
+    rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
+}
+
+message FriendRequest {
+    string HostId = 1;
+}
+
+message FriendResponse {
+    bool isValid = 1;
+    string friendHostId = 2;
+}
+
+message CreateProfileRequest {
+    int64 userId = 1;
+}
+
+message CreateProfileResponse {
+    bool isValid = 1;
+}
+
+message SendMessageRequest {
+    string text = 1;
+    string targetHostId = 2;
+    string fromHostId = 3;
+}
+
+message SendMessageResponse {
+    string response = 1;
+}
