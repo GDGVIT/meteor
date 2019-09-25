@@ -351,33 +351,42 @@ ApplicationWindow {
                         color: Resources.transparentColor
                     }
                     onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
-                    
-                    property var pressShift: 0
+
+                    property var pressCtrl: 0
+
+                    Shortcut {
+                        sequences: ["Ctrl+Return"]
+                        context: Qt.ApplicationShortcut
+                        onActivated: {
+                            messageEdit.text += "\n";
+                            var nlines = messageEdit.text.split("\n").length - 1
+                            if(nlines <= 4) {
+                                chatMessageContainer.height = Resources.chatMessageContainerHeight + nlines * 10
+                            }
+                            messageEdit.cursorPosition = messageEdit.text.length;
+                        }
+                    }
+
+                    Keys.onReturnPressed: {
+                        postMessage();
+                    }
 
                     Keys.onPressed: {
                         var nlines = messageEdit.text.split("\n").length - 1
                         if(nlines <= 4) {
                             chatMessageContainer.height = Resources.chatMessageContainerHeight + nlines * 10
                         }
-                        if(event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                            pressShift = 1;
-                        } else {
-                            pressShift = 0;
-                        }
-
+                        messageEdit.cursorPosition = messageEdit.text.length;
                     }
 
-                    Keys.onReleased: {
-                        if(pressShift) {
-                            if(event.key === Qt.Key_Shift) {
-                                pressShift = 0;
-                                mainBackend.sendMessage(contactModelProvider.model.getDHTId(contactListView.currentIndex), messageEdit.text.substr(0, messageEdit.text.length - 1));
-                                messageEdit.text = "";
-                            }
-
+                    function postMessage() {
+                        if(messageEdit.text.length > 0) {
+                            mainBackend.sendMessage(contactModelProvider.model.getDHTId(contactListView.currentIndex), messageEdit.text.substr(0, messageEdit.text.length));
                         }
+                        messageEdit.text = "";
+                        chatMessageContainer.height = Resources.chatMessageContainerHeight
                     }
-
+                    
                 }
 
                 ScrollBar.vertical: ScrollBar {visible: true; height: 5}
@@ -550,8 +559,6 @@ ApplicationWindow {
                 width: parent.height
                 height: parent.height
 
-
-
                 background: Rectangle {
 
                     width: parent.width
@@ -593,7 +600,7 @@ ApplicationWindow {
                         }
                     }
 
-
+                
                 }
 
                 onHoveredChanged:  {
