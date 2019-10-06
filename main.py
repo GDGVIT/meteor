@@ -8,12 +8,15 @@ from qmlModels import contact_model
 import utils
 from utils import getContactsFromDB
 
+import meteor_node
+
 
 backendWindow = window.BackendWindow()
 chatModelProvider = chat_model.ChatModelProvider([])
 contactModelProvider = contact_model.ContactModelProvider([])
 
 currContacts = []
+meteorNode = meteor_node.MeteorNodeInterface(7777)
 
 class MainBackend(QtCore.QObject):
     def __init__(self, parent=None):
@@ -59,6 +62,7 @@ class MainBackend(QtCore.QObject):
 
 mainBackend = MainBackend()
 
+
 def onClose():
     print("Closing backend..")
 
@@ -91,22 +95,5 @@ if __name__ == '__main__':
     loadContacts()
     
     app.exec_()
-'''
 
-from proto import meteor_pb2
-from proto import meteor_pb2_grpc
-import grpc
-
-
-def sendMessage(text_):
-    with grpc.insecure_channel("localhost:9999") as channel:
-        stub = meteor_pb2_grpc.MessageSenderStub(channel)
-        response = stub.SendMessage(meteor_pb2.SendMessageRequest(text=text_))
-        channel.close()
-
-
-if __name__ == "__main__":
-    sendMessage(input())
-
-'''
 

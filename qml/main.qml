@@ -776,6 +776,20 @@ ApplicationWindow {
             anchors.bottom: parent.bottom
             color: Resources.extrasContainerBackgroundColor
 
+            Text {
+                id: dhtIdText
+                text: "DHT-ID: Q1729fx"
+                font.pointSize: 10
+                font.family: "Segoe UI"
+                color: "#d3cdf9"
+                
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                topPadding: 5
+                bottomPadding: 5
+                
+            }
+
             //conceal top corner radius
             Rectangle {
                 width: parent.width

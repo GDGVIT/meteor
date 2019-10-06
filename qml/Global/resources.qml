@@ -122,11 +122,23 @@ QtObject {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: bubbleData
+                        wrapMode: Text.WordWrap
+                        //width: (width > parent.parent.parent.parent.width / 3) ? parent.parent.parent.parent.width / 3 : undefined
+                        
                         color: isRightBubble === 1 ? rightChatBubbleForegroundColor : leftChatBubbleForegroundColor
 
                         font.pointSize: chatBubbleFontPointSize
                         linkColor: isRightBubble ? "#ffe46b" : "#7eb8f8"
                         onLinkActivated: Qt.openUrlExternally(link)
+
+                        Component.onCompleted: {
+                            if(width > parent.parent.parent.parent.width / 3) {
+                                width = parent.parent.parent.parent.width / 3;
+                            } else {
+                                width = undefined;
+                            }
+                        }
+                        
                     }
 
                     //chatBubble outgrowth
